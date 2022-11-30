@@ -13,9 +13,9 @@ module ExpenseTracker
     let(:ledger) { instance_double('ExpenseTracker::Ledger') }
 
     describe 'POST /expenses' do
-      context 'when the expense is successfully recorded' do
-        let(:expense) { { 'some' => 'data' } }
+      let(:expense) { { 'some' => 'data' } }
 
+      context 'when the expense is successfully recorded' do
         before do
           allow(ledger).to receive(:record)
             .with(expense)
@@ -37,8 +37,6 @@ module ExpenseTracker
       end
             
       context 'when the expense fails validation' do
-        let(:expense) { { 'some' => 'data' } }
- 	
         before do
           allow(ledger).to receive(:record)
             .with(expense)
@@ -57,7 +55,52 @@ module ExpenseTracker
           expect(last_response.status).to eq(422)
         end
       end
-      # ... next context will go here...
+    end
+    
+    describe 'GET /expenses/:date' do
+      let(:expenses) { [{ 'some' => 'data' }, {'some_other' => 'data'} ] }
+
+      context 'when expenses exist on the given date' do
+        before do
+          allow(ledger).to receive(:expenses_on)
+            .with('2017-11-27')
+            .and_return([RecordResult.new(true, 417, nil),
+                         RecordResult.new(true, 418, nil)
+                         ])
+        end
+
+        it 'returns the expense records as JSON' do
+          get '/expenses/2017-11-27'
+
+          parsed_body = JSON.parse(last_response.body)
+          parsed_body.each { |i| expect(i["expense_id"]).to_not be_nil }
+        end
+
+        it 'responds with a 200 (OK)' do
+          get '/expenses/2017-11-27'
+
+          expect(last_response.status).to eq(200)
+        end
+      end
+    
+      context 'when there are no expenses on the given date' do
+        before do
+          allow(ledger).to receive(:expenses_on).with('2017-11-28').and_return([])
+        end
+
+        it 'returns an empty array as JSON' do
+          get '/expenses/2017-11-28'
+
+          parsed_body = JSON.parse(last_response.body)
+          expect(parsed_body).to be_empty
+        end
+
+        it 'responds with a 200 (OK)' do
+          get '/expenses/2017-11-28'
+
+          expect(last_response.status).to eq(200)
+        end
+      end
     end
   end
 end
