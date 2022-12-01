@@ -6,12 +6,16 @@ module ExpenseTracker
   RSpec.describe API do
     include Rack::Test::Methods
 	
+    let(:ledger) { instance_double('ExpenseTracker::Ledger') }
+    
     def app
       API.new(ledger: ledger)
     end
-	
-    let(:ledger) { instance_double('ExpenseTracker::Ledger') }
 
+    def expect_to_include(parsed, hash)
+      expect(parsed).to include(hash)
+    end
+	
     describe 'POST /expenses' do
       let(:expense) { { 'some' => 'data' } }
 
@@ -26,7 +30,7 @@ module ExpenseTracker
           post '/expenses', JSON.generate(expense)
         
           parsed = JSON.parse(last_response.body)
-          expect(parsed).to include('expense_id' => 417)
+          expect_to_include(parsed, 'expense_id' => 417)
         end
 
         it 'responds with a 200 (OK)' do
@@ -47,7 +51,7 @@ module ExpenseTracker
           post '/expenses', JSON.generate(expense)
  	
           parsed = JSON.parse(last_response.body)
-          expect(parsed).to include('error' => 'Expense incomplete')
+          expect_to_include(parsed, 'error' => 'Expense incomplete')
         end
 
         it 'responds with a 422 (Unprocessable entity)' do

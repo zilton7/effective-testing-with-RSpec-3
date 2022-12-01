@@ -3,7 +3,7 @@ require 'json'
 require_relative '../../app/api'
 
 module ExpenseTracker
-  RSpec.describe 'Expense Tracker API' do
+  RSpec.describe 'Expense Tracker API', :db do
     include Rack::Test::Methods
 
     def app
@@ -21,15 +21,12 @@ module ExpenseTracker
 
     
     it 'records submitted expenses' do
-      pending 'Need to persist expenses'
       # POST coffee, zoo, and groceries expenses here
       zoo = post_expense(
         'payee'  => 'Zoo',
         'amount' => 15.25,
         'date'   => '2017-06-10'
       )
-
-      p zoo
       
       groceries = post_expense(
         'payee'  => 'Whole Foods',
