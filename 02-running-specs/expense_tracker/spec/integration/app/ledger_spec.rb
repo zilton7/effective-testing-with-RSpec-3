@@ -40,6 +40,34 @@ module ExpenseTracker
         end
       end
 
+      context 'when the expense lacks an amount' do
+        it 'rejects the expense as invalid' do
+          expense.delete('amount')
+      
+          result = ledger.record(expense)
+      
+          expect(result).not_to be_success
+          expect(result.expense_id).to eq(nil)
+          expect(result.error_message).to include('`amount` is required')
+      
+          expect(DB[:expenses].count).to eq(0)
+        end
+      end
+
+      context 'when the expense lacks a date' do
+        it 'rejects the expense as invalid' do
+          expense.delete('date')
+      
+          result = ledger.record(expense)
+      
+          expect(result).not_to be_success
+          expect(result.expense_id).to eq(nil)
+          expect(result.error_message).to include('`date` is required')
+      
+          expect(DB[:expenses].count).to eq(0)
+        end
+      end
+
       describe '#expenses_on' do
         it 'returns all expenses for the provided date' do
           result_1 = ledger.record(expense.merge('date' => '2017-06-10'))
